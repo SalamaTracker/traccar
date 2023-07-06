@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  database:
+    container_name: DATABASE
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_NAME:-traccar}
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+        - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - var/lib/postgresql/data
+      - ./conf/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+
+  traccar:
+    container_name: TRACCAR
+    depends_on:
+      database:
+        condition: service_healthy
+    image: traccar/traccar:latest
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+      - "5000-5150:5000-5150"
+      - "5000-5150:5000-5150/udp"
+    volumes:
+      - ./conf/traccar.xml:/opt/traccar/conf/traccar.xml
