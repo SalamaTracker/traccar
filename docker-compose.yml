@@ -16,7 +16,7 @@ services:
         - "5432:5432"
     restart: unless-stopped
     volumes:
-      - var/lib/postgresql/data
+      - /var/lib/postgresql/data
       - ./conf/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
 
   traccar:
